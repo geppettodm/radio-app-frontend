@@ -24,3 +24,26 @@
 @import "~@ionic/angular/css/text-alignment.css";
 @import "~@ionic/angular/css/text-transformation.css";
 @import "~@ionic/angular/css/flex-utils.css";
+
+ion-content {
+    --background:var(--ion-color-dark);
+}
+
+@font-face {
+    font-family: 'Generic-font';
+    font-style: normal;
+    font-weight: normal;
+    src: url('/assets/fonts/regular.ttf');
+  }
+  
+  @font-face {
+    font-family: 'Generic-font';
+    font-weight: bold;
+    src: url('/assets/fonts/bold.ttf');
+  }
+  
+  @font-face {
+    font-family: 'Generic-font';
+    font-weight: lighter;
+    src: url('/assets/fonts/light.ttf');
+  }

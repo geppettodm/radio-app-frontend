@@ -1,1 +1,21 @@
+*{font-family:'Generic-font';}
 
+.player{
+    height: 55px;
+    background: var(--ion-tab-bar-background);
+    font-family: 'Generic-font';
+    font-size: small;
+    img {
+        height: 55px;
+    }
+    .progress-bar {
+        width: 100%;
+        height:2px;
+        background:var(--ion-tab-bar-background);
+        
+        .progress {
+            background: var(--ion-color-primary);
+            height: 100%;
+        }
+    }
+}
