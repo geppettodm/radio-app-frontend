@@ -7,15 +7,14 @@ import { IonicModule } from '@ionic/angular';
 import { RadioPageRoutingModule } from './radio-routing.module';
 
 import { RadioPage } from './radio.page';
-import { SharedDirectivesModule } from '../directives/shared-directives.module';
+
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    RadioPageRoutingModule,
-    SharedDirectivesModule
+    RadioPageRoutingModule
   ],
   declarations: [RadioPage]
 })

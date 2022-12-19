@@ -1,20 +1,44 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, ParamMap } from '@angular/router';
+import { DataServiceService } from '../services/data-service.service';
+import { StreamingMedia, StreamingAudioOptions } from '@ionic-native/streaming-media/ngx';
+
 
 @Component({
   selector: 'app-radio',
-  templateUrl: './radio.page.html',
-  styleUrls: ['./radio.page.scss'],
+  templateUrl: 'radio.page.html',
+  styleUrls: ['radio.page.scss'],
 })
-export class RadioPage implements OnInit {
-  radio=null;
+export class RadioPage {
+  radio= null;
+  area = [];
 
-  constructor(private activatedRoute: ActivatedRoute) { }
+  options:StreamingAudioOptions = {
+    initFullscreen: false, // true is default. iOS only.
+    successCallback: function() {
+      console.log("Player closed without error.");
+    },
+    errorCallback: function(errMsg) {
+      console.log("Error! " + errMsg);
+    }
+  };
+
+  constructor(private activatedRoute: ActivatedRoute, private dataService: DataServiceService, private router: Router, private streamingMedia: StreamingMedia) {
+   }
 
   ngOnInit() {
-    //const title = this.activatedRoute.snapshot.paramMap.get('title');
-    //const decodedTitle = decodeURIComponent(title);
-    //this.data = albums[decodedTitle];
+    this.activatedRoute.params.subscribe(params => {this.dataService.setNowRadio(params['radio'])})
+    this.dataService.nowRadio.subscribe(data => this.radio=data)
+    this.dataService.areaRadios.subscribe(data=>this.area=data)
+  }
+
+
+  redirect(_id) {
+    this.router.navigate(['/radio', _id]);
+  }
+
+  play(string){
+    this.streamingMedia.playAudio("http://radio.garden/api/ara/content/listen/"+string+"/channel.mp3", this.options);
   }
 
 }

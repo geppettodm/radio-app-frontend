@@ -5,7 +5,7 @@ import { RadioPage } from './radio.page';
 
 const routes: Routes = [
   {
-    path: '',
+    path: ':radio',
     component: RadioPage
   }
 ];
