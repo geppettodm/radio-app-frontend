@@ -3,6 +3,7 @@ import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { Geolocation } from '@capacitor/geolocation';
+import { promise } from 'protractor';
 
 
 @Injectable({
@@ -15,13 +16,14 @@ export class DataServiceService {
   skipNear = 0;
   x = 41
   y =17
+  playingRadioStringConn = null;
 
   favouriteRadios = new BehaviorSubject(null);
   randomRadios = new BehaviorSubject(null);
   nearRadios = new BehaviorSubject(null);
   areaRadios = new BehaviorSubject(null);
   nowRadio = new BehaviorSubject(null);
-
+  playingRadio = new BehaviorSubject({name:"",city:"",conn:null});
 
 
 
@@ -63,6 +65,19 @@ export class DataServiceService {
 
   async areaRadio(radio){
     this.http.get(this.conn + 'db/radios?country=' + radio.country, { observe: 'body', responseType: 'json' }).subscribe((data) => {this.areaRadios.next(data);})
+  }
+
+  async newPlayingRadio(id){
+    this.http.get(this.conn + 'db/radio?id=' + id, { observe: 'body', responseType: 'json' }).subscribe((data) => {this.setPlayingRadio(data)})
+  }
+
+  async setPlayingRadio(radio){
+    if(radio.conn){
+    let url = await this.http.get(this.conn+'db/url?string='+"http://radio.garden/api/ara/content/listen/"+radio.conn+"/channel.mp3", { observe: 'body', responseType: 'json' }).toPromise()
+    this.playingRadioStringConn = url;
+    this.playingRadio.next(radio);
+  }
+    else return null
   }
 
 

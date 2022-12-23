@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 import { DataServiceService } from '../services/data-service.service';
-import { StreamingMedia, StreamingAudioOptions } from '@ionic-native/streaming-media/ngx';
+
 
 
 @Component({
@@ -13,17 +13,9 @@ export class RadioPage {
   radio= null;
   area = [];
 
-  options:StreamingAudioOptions = {
-    initFullscreen: false, // true is default. iOS only.
-    successCallback: function() {
-      console.log("Player closed without error.");
-    },
-    errorCallback: function(errMsg) {
-      console.log("Error! " + errMsg);
-    }
-  };
 
-  constructor(private activatedRoute: ActivatedRoute, private dataService: DataServiceService, private router: Router, private streamingMedia: StreamingMedia) {
+
+  constructor(private activatedRoute: ActivatedRoute, private dataService: DataServiceService, private router: Router) {
    }
 
   ngOnInit() {
@@ -37,8 +29,9 @@ export class RadioPage {
     this.router.navigate(['/radio', _id]);
   }
 
-  play(string){
-    this.streamingMedia.playAudio("http://radio.garden/api/ara/content/listen/"+string+"/channel.mp3", this.options);
+  play(id){
+    this.dataService.newPlayingRadio(id)
+    this.router.navigate(['tabs/tab1'])
   }
 
 }

@@ -9,11 +9,12 @@
         <img src=""> 
       </ion-col>
       <ion-col size="8" class="ion-align-self-center">
-        <b>All the Good Girls Go to Hell</b><br>
-        <span>Billie Eilish</span>
+        <b>{{radio.name}}</b><br>
+        <span>{{radio.city}}</span>
       </ion-col>
       <ion-col size="2" class="ion-text-center ion-no-padding ion-align-self-center">
-        <ion-icon name="play" size="large"></ion-icon>
+        <ion-icon *ngIf = "!playing" name="play" size="large" (click)="playRadio()"></ion-icon>
+        <ion-icon *ngIf = "playing" name="pause" size="large" (click)="pauseRadio()"></ion-icon>
       </ion-col>
     </ion-row>
   </div>
