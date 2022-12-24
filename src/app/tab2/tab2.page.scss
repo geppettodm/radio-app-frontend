@@ -1,1 +1,6 @@
 *{font-family:'Generic-font';}
+
+ion-searchbar.bar{
+    color: var(--ion-color-primary);
+    --icon-color: var(--ion-color-primary);
+}

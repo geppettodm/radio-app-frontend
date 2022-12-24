@@ -22,6 +22,7 @@ export class TabsPage {
 
   playRadio(){
     if(this.dataService.playingRadioStringConn!=null){
+    if(this.audio) {this.audio.pause(); this.audio = null}
     this.audio = new Audio(this.dataService.playingRadioStringConn);
     this.audio.play();
     this.playing=true;

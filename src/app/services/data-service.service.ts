@@ -14,9 +14,11 @@ export class DataServiceService {
   conn = "http://127.0.0.1:3000/"
   ext = 0.25;
   skipNear = 0;
+  skipsearch = 0;
   x = 41
   y =17
   playingRadioStringConn = null;
+  query = null;
 
   favouriteRadios = new BehaviorSubject(null);
   randomRadios = new BehaviorSubject(null);
@@ -80,5 +82,16 @@ export class DataServiceService {
     else return null
   }
 
+  async searchRadios(string?:string){
+    const limit = 15;
+    if(string){
+      this.query = string;
+      this.skipsearch = 0;
+      return this.http.get(this.conn + "db/query?&limit=" + limit +"&string=" + this.query, { observe: 'body', responseType: 'json' }).toPromise()
+    } else {
+      this.skipsearch = this.skipsearch + 1;
+      return this.http.get(this.conn + 'db/query?string=' + this.query + "&limit=" + limit + "&skip=" + this.skipsearch, { observe: 'body', responseType: 'json' }).toPromise()
+    }
+}
 
 }
