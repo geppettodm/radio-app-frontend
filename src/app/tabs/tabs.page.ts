@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { DataServiceService } from '../services/data-service.service';
 
 
@@ -9,11 +10,11 @@ import { DataServiceService } from '../services/data-service.service';
 })
 export class TabsPage {
   progress = 42;
-  playing = false
-  radio;
+  public playing = false
+  public radio;
   audio: HTMLAudioElement;
 
-  constructor(private dataService: DataServiceService) {}
+  constructor(private dataService: DataServiceService, private router: Router) {}
   
 
   ngOnInit(){
@@ -32,5 +33,9 @@ export class TabsPage {
   pauseRadio(){
     this.audio.pause();
     this.playing=false;
+  }
+
+  toRadio(_id){
+    this.router.navigate(['/radio', _id]);
   }
 }

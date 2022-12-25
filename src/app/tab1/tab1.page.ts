@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { DataServiceService } from '../services/data-service.service';
+import { StorageService } from '../services/storage.service';
 
 
 
@@ -11,7 +12,7 @@ import { DataServiceService } from '../services/data-service.service';
 })
 
 export class Tab1Page {
-  constructor(private router: Router, private dataService: DataServiceService) { 
+  constructor(private router: Router, private dataService: DataServiceService, private storage: StorageService) {
   }
 
   caricamento = {
@@ -41,7 +42,7 @@ export class Tab1Page {
       id: 2,
       title: 'Vicino a te',
       radios: [],
-      round:null
+      round: null
     }
   ];
 
@@ -57,15 +58,36 @@ export class Tab1Page {
     this.data[1].radios = [this.caricamento, this.caricamento, this.caricamento]
     this.data[2].radios = [this.caricamento, this.caricamento, this.caricamento]
 
-    this.dataService.favouriteRadios.subscribe((data: []) => this.refreshFav(data))
     this.dataService.randomRadios.subscribe((data: []) => this.refreshRand(data))
-    this.dataService.nearRadios.subscribe((data: []) => this.refreshNear(data))    
+    this.dataService.nearRadios.subscribe((data: []) => this.refreshNear(data))
+    this.dataService.playingRadio.subscribe((data)=>this.chargeStoredRadios())
+
+    await this.storage.init();
+    this.chargeStoredRadios();
+
   }
 
-  refreshFav(data){}
-  
-  
-  refreshRand(data:[]) {
+
+  async chargeStoredRadios() {
+    let storageRadios = await this.storage.get("recentRadios")
+
+    if (storageRadios) {   
+      storageRadios = storageRadios.reverse(); 
+      for (let i=0; i < storageRadios.length; i++) {
+        storageRadios[i] = await this.dataService.getRadio(storageRadios[i]);
+        }
+      
+      if (storageRadios.length < 4) {
+        for (let i = storageRadios.length - 1; i < 3; i++) {
+          storageRadios.push(this.nothing)
+        }
+      }
+      this.data[0].radios = storageRadios;
+    }
+  }
+
+
+  refreshRand(data: []) {
     if (data) {
       if (this.data[1].radios[0].buffering) {
         this.data[1].radios = data
@@ -75,19 +97,19 @@ export class Tab1Page {
     }
   }
 
-  refreshNear(data:[]){
-    if(data){
+  refreshNear(data: []) {
+    if (data) {
       if (this.data[2].radios[0].buffering) {
         this.data[2].radios = data
-    } else {
-      data.forEach((radio)=>{
-        if(!(this.data[2].radios.includes(radio))){
-          this.data[2].radios.push(radio)
-        }
-      })
+      } else {
+        data.forEach((radio) => {
+          if (!(this.data[2].radios.includes(radio))) {
+            this.data[2].radios.push(radio)
+          }
+        })
+      }
     }
   }
-}
 
   openAlbum(radio) {
     this.router.navigate(['/radio', radio._id]);
@@ -95,7 +117,7 @@ export class Tab1Page {
 
   endSlide(data) {
 
-    if (data.id === 1){
+    if (data.id === 1) {
       this.dataService.newRandomRadios(1);
     }
 

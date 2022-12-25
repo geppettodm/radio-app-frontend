@@ -1,14 +1,12 @@
 <ion-tabs slot="bottom">
 
-  <div class="player" >
-    <div class="progress-bar">
-      <div class="progress" [style.width]="progress + '%'"></div>
-    </div>
+  <div class="player" *ngIf = "audio">
+    <ion-progress-bar *ngIf="playing" class ="progress-bar" type="indeterminate"></ion-progress-bar>
     <ion-row class="ion-no-padding">
-      <ion-col size="2" class="ion-no-padding">
-        <img src=""> 
+      <ion-col size="2" (click) = "toRadio(radio._id)">
+        <img [src]=radio.image onerror="this.error=null; this.src= 'assets/icon/empty.png'">
       </ion-col>
-      <ion-col size="8" class="ion-align-self-center">
+      <ion-col size="8" class="ion-align-self-center" (click) = "toRadio(radio._id)">
         <b>{{radio.name}}</b><br>
         <span>{{radio.city}}</span>
       </ion-col>

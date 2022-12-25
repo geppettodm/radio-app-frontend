@@ -3,42 +3,42 @@ import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { Geolocation } from '@capacitor/geolocation';
-import { promise } from 'protractor';
+import { StorageService } from './storage.service';
+
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class DataServiceService {
-  
+
   conn = "http://127.0.0.1:3000/"
   ext = 0.25;
   skipNear = 0;
   skipsearch = 0;
   x = 41
-  y =17
+  y = 17
   playingRadioStringConn = null;
   query = null;
 
-  favouriteRadios = new BehaviorSubject(null);
   randomRadios = new BehaviorSubject(null);
   nearRadios = new BehaviorSubject(null);
   areaRadios = new BehaviorSubject(null);
   nowRadio = new BehaviorSubject(null);
-  playingRadio = new BehaviorSubject({name:"",city:"",conn:null});
+  playingRadio = new BehaviorSubject({ name: "", city: "", conn: null, _id: null });
 
 
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private storage: StorageService) {
     this.init();
   }
 
   async init() {
     this.newRandomRadios(5)
-    
+
     const coord = await Geolocation.getCurrentPosition();
     this.x = coord.coords.latitude
-    this.y=  coord.coords.longitude
+    this.y = coord.coords.longitude
     this.newNearRadios()
   }
 
@@ -47,13 +47,13 @@ export class DataServiceService {
   }
 
   newNearRadios() {
-    if(this.ext<0.8){
+    if (this.ext < 0.8) {
       this.http.get(this.conn + 'db/near?x=' + this.x + '&y=' + this.y + '&ext=' + this.ext + '&skip=' + this.skipNear + '&limit=' + 4, { observe: 'body', responseType: 'json' }).subscribe((data: []) => {
-        if(data){
+        if (data) {
           this.nearRadios.next(data);
-          this.skipNear = this.skipNear+1;
-        } else{
-          this.ext = 2*(this.ext) 
+          this.skipNear = this.skipNear + 1;
+        } else {
+          this.ext = 2 * (this.ext)
           this.skipNear = 0;
           this.newNearRadios()
         }
@@ -61,37 +61,52 @@ export class DataServiceService {
     } else return
   }
 
-  async setNowRadio(string:string){
-    this.http.get(this.conn + 'db/radio?id=' + string, { observe: 'body', responseType: 'json' }).subscribe((data) => {this.nowRadio.next(data); this.areaRadio(data)})
+  async setNowRadio(string: string) {
+    this.http.get(this.conn + 'db/radio?id=' + string, { observe: 'body', responseType: 'json' }).subscribe((data) => { this.nowRadio.next(data); this.areaRadio(data) })
   }
 
-  async areaRadio(radio){
-    this.http.get(this.conn + 'db/radios?country=' + radio.country, { observe: 'body', responseType: 'json' }).subscribe((data) => {this.areaRadios.next(data);})
+  async areaRadio(radio) {
+    this.http.get(this.conn + 'db/radios?country=' + radio.country, { observe: 'body', responseType: 'json' }).subscribe((data) => { this.areaRadios.next(data); })
   }
 
-  async newPlayingRadio(id){
-    this.http.get(this.conn + 'db/radio?id=' + id, { observe: 'body', responseType: 'json' }).subscribe((data) => {this.setPlayingRadio(data)})
+  async newPlayingRadio(id) {
+    this.http.get(this.conn + 'db/radio?id=' + id, { observe: 'body', responseType: 'json' }).subscribe((data) => { this.setPlayingRadio(data) })
   }
 
-  async setPlayingRadio(radio){
-    if(radio.conn){
-    let url = await this.http.get(this.conn+'db/url?string='+"http://radio.garden/api/ara/content/listen/"+radio.conn+"/channel.mp3", { observe: 'body', responseType: 'json' }).toPromise()
-    this.playingRadioStringConn = url;
-    this.playingRadio.next(radio);
-  }
+  async setPlayingRadio(radio) {
+    if (radio.conn) {
+      let url = await this.http.get(this.conn + 'db/url?string=' + "http://radio.garden/api/ara/content/listen/" + radio.conn + "/channel.mp3", { observe: 'body', responseType: 'json' }).toPromise()
+      this.playingRadioStringConn = url;
+      this.playingRadio.next(radio);
+
+      let rec = await this.storage.get("recentRadios");
+      if (rec) {
+        if (!(rec.includes(radio._id))) {
+          while(rec.length>12){rec.shift()}
+          rec.push(radio._id)
+          this.storage.set("recentRadios", rec)
+        }
+      } else {
+        this.storage.set("recentRadios", [radio._id])
+      }
+    }
     else return null
   }
 
-  async searchRadios(string?:string){
+  async searchRadios(string?: string) {
     const limit = 15;
-    if(string){
+    if (string) {
       this.query = string;
       this.skipsearch = 0;
-      return this.http.get(this.conn + "db/query?&limit=" + limit +"&string=" + this.query, { observe: 'body', responseType: 'json' }).toPromise()
+      return this.http.get(this.conn + "db/query?&limit=" + limit + "&string=" + this.query, { observe: 'body', responseType: 'json' }).toPromise()
     } else {
       this.skipsearch = this.skipsearch + 1;
       return this.http.get(this.conn + 'db/query?string=' + this.query + "&limit=" + limit + "&skip=" + this.skipsearch, { observe: 'body', responseType: 'json' }).toPromise()
     }
-}
+  }
+
+  async getRadio(id: string) {
+    return this.http.get(this.conn + 'db/radio?id=' + id, { observe: 'body', responseType: 'json' }).toPromise()
+  }
 
 }
