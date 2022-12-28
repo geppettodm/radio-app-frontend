@@ -1,9 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Geolocation } from '@capacitor/geolocation';
 import { StorageService } from './storage.service';
+import { AuthService } from './auth.service';
+import { Router } from '@angular/router';
+import {Connection} from "./connection"
 
 
 
@@ -12,7 +15,7 @@ import { StorageService } from './storage.service';
 })
 export class DataServiceService {
 
-  conn = "http://127.0.0.1:3000/"
+  public conn = this.connection.conn
   ext = 0.25;
   skipNear = 0;
   skipsearch = 0;
@@ -26,29 +29,43 @@ export class DataServiceService {
   areaRadios = new BehaviorSubject(null);
   nowRadio = new BehaviorSubject(null);
   playingRadio = new BehaviorSubject({ name: "", city: "", conn: null, _id: null });
+  recentRadios = new BehaviorSubject(null)
 
 
 
-  constructor(private http: HttpClient, private storage: StorageService) {
-    this.init();
+  constructor(private http: HttpClient, private storage: StorageService, private router:Router, private auth:AuthService, private connection:Connection) {
+    this.auth.header.subscribe((header)=>this.init())
   }
 
   async init() {
+    if(this.auth.header.value!=null){
     this.newRandomRadios(5)
+
+    this.recentRadios.next(await this.storage.get("recentRadios"))
 
     const coord = await Geolocation.getCurrentPosition();
     this.x = coord.coords.latitude
     this.y = coord.coords.longitude
     this.newNearRadios()
+    this.router.navigate(["/tabs/tab1"])
+    } else this.router.navigate(["/login"])
   }
 
-  newRandomRadios(n: number) {
-    this.http.get(this.conn + 'db/random?number=' + n, { observe: 'body', responseType: 'json' }).subscribe((data: []) => { this.randomRadios.next(data) })
+  redirectViolation(error:HttpErrorResponse){
+    if(error.status==401){
+      this.router.navigate(["/login"])
+    } else (console.error(error))
+  }
+
+  newRandomRadios(n: number) {    
+    this.http.get(this.conn + 'db/random?number=' + n, { headers: this.auth.header.value, observe: 'body', responseType: 'json' }).subscribe(
+      (data: []) => { this.randomRadios.next(data)}, 
+      (error)=>this.redirectViolation(error));
   }
 
   newNearRadios() {
     if (this.ext < 0.8) {
-      this.http.get(this.conn + 'db/near?x=' + this.x + '&y=' + this.y + '&ext=' + this.ext + '&skip=' + this.skipNear + '&limit=' + 4, { observe: 'body', responseType: 'json' }).subscribe((data: []) => {
+      this.http.get(this.conn + 'db/near?x=' + this.x + '&y=' + this.y + '&ext=' + this.ext + '&skip=' + this.skipNear + '&limit=' + 4, { headers: this.auth.header.value, observe: 'body', responseType: 'json' }).subscribe((data: []) => {
         if (data) {
           this.nearRadios.next(data);
           this.skipNear = this.skipNear + 1;
@@ -57,25 +74,31 @@ export class DataServiceService {
           this.skipNear = 0;
           this.newNearRadios()
         }
-      })
+      },
+      (error)=>this.redirectViolation(error));
+      
     } else return
   }
 
   async setNowRadio(string: string) {
-    this.http.get(this.conn + 'db/radio?id=' + string, { observe: 'body', responseType: 'json' }).subscribe((data) => { this.nowRadio.next(data); this.areaRadio(data) })
+    this.http.get(this.conn + 'db/radio?id=' + string, { headers: this.auth.header.value, observe: 'body', responseType: 'json' }).subscribe((data) => { this.nowRadio.next(data); this.areaRadio(data) },
+    (error)=>this.redirectViolation(error))
   }
 
   async areaRadio(radio) {
-    this.http.get(this.conn + 'db/radios?country=' + radio.country, { observe: 'body', responseType: 'json' }).subscribe((data) => { this.areaRadios.next(data); })
+    this.http.get(this.conn + 'db/radios?country=' + radio.country, { headers: this.auth.header.value, observe: 'body', responseType: 'json' }).subscribe((data) => { this.areaRadios.next(data); },
+    (error)=>this.redirectViolation(error))
   }
 
   async newPlayingRadio(id) {
-    this.http.get(this.conn + 'db/radio?id=' + id, { observe: 'body', responseType: 'json' }).subscribe((data) => { this.setPlayingRadio(data) })
+    this.http.get(this.conn + 'db/radio?id=' + id, { headers: this.auth.header.value, observe: 'body', responseType: 'json' }).subscribe((data) => { this.setPlayingRadio(data) },
+    (error)=>this.redirectViolation(error))
   }
 
   async setPlayingRadio(radio) {
     if (radio.conn) {
-      let url = await this.http.get(this.conn + 'db/url?string=' + "http://radio.garden/api/ara/content/listen/" + radio.conn + "/channel.mp3", { observe: 'body', responseType: 'json' }).toPromise()
+      let url = await this.http.get(this.conn + 'db/url?string=' + "http://radio.garden/api/ara/content/listen/" + radio.conn + "/channel.mp3", { headers: this.auth.header.value, observe: 'body', responseType: 'json' }).toPromise().catch((error)=>{this.redirectViolation(error); return})
+      
       this.playingRadioStringConn = url;
       this.playingRadio.next(radio);
 
@@ -89,6 +112,7 @@ export class DataServiceService {
       } else {
         this.storage.set("recentRadios", [radio._id])
       }
+      this.recentRadios.next(await this.storage.get("recentRadios"))
     }
     else return null
   }
@@ -98,15 +122,15 @@ export class DataServiceService {
     if (string) {
       this.query = string;
       this.skipsearch = 0;
-      return this.http.get(this.conn + "db/query?&limit=" + limit + "&string=" + this.query, { observe: 'body', responseType: 'json' }).toPromise()
+      return this.http.get(this.conn + "db/query?&limit=" + limit + "&string=" + this.query, { headers: this.auth.header.value, observe: 'body', responseType: 'json' }).toPromise().catch((error)=>{this.redirectViolation(error); return})
     } else {
       this.skipsearch = this.skipsearch + 1;
-      return this.http.get(this.conn + 'db/query?string=' + this.query + "&limit=" + limit + "&skip=" + this.skipsearch, { observe: 'body', responseType: 'json' }).toPromise()
+      return this.http.get(this.conn + 'db/query?string=' + this.query + "&limit=" + limit + "&skip=" + this.skipsearch, { headers: this.auth.header.value, observe: 'body', responseType: 'json' }).toPromise().catch((error)=>{this.redirectViolation(error); return})
     }
   }
 
   async getRadio(id: string) {
-    return this.http.get(this.conn + 'db/radio?id=' + id, { observe: 'body', responseType: 'json' }).toPromise()
+    return this.http.get(this.conn + 'db/radio?id=' + id, { headers: this.auth.header.value,observe: 'body', responseType: 'json' }).toPromise().catch((error)=>{this.redirectViolation(error); return})
   }
 
 }

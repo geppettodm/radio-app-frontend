@@ -8,8 +8,7 @@ export class StorageService {
   private _storage: Storage | null = null;
 
   constructor(private storage: Storage) {
-    this.init();
-   }
+  }
 
    async init() {
     // If using, define drivers here: await this.storage.defineDriver(/*...*/);
@@ -24,6 +23,10 @@ export class StorageService {
 
   public get(key: string) {
     return this._storage?.get(key);
+  }
+
+  public remove(key: string) {
+    return this._storage?.remove(key);
   }
 }
 

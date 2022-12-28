@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 import { DataServiceService } from '../services/data-service.service';
 import { StorageService } from '../services/storage.service';
 
@@ -12,7 +13,7 @@ import { StorageService } from '../services/storage.service';
 })
 
 export class Tab1Page {
-  constructor(private router: Router, private dataService: DataServiceService, private storage: StorageService) {
+  constructor(private router: Router, private dataService: DataServiceService, private storage: StorageService, private auth:AuthService) {
   }
 
   caricamento = {
@@ -60,18 +61,14 @@ export class Tab1Page {
 
     this.dataService.randomRadios.subscribe((data: []) => this.refreshRand(data))
     this.dataService.nearRadios.subscribe((data: []) => this.refreshNear(data))
-    this.dataService.playingRadio.subscribe((data)=>this.chargeStoredRadios())
-
-    await this.storage.init();
-    this.chargeStoredRadios();
-
+    this.dataService.recentRadios.subscribe((data)=>{this.chargeStoredRadios(data)})
   }
 
 
-  async chargeStoredRadios() {
-    let storageRadios = await this.storage.get("recentRadios")
+  async chargeStoredRadios(data) {
+    let storageRadios = data
 
-    if (storageRadios) {   
+    if (storageRadios != null) {   
       storageRadios = storageRadios.reverse(); 
       for (let i=0; i < storageRadios.length; i++) {
         storageRadios[i] = await this.dataService.getRadio(storageRadios[i]);
