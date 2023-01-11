@@ -6,13 +6,14 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <!-- <ion-list>
-    <ion-item button *ngFor="let radio of results; let index" lines="none" (click)="toRadio(radio._id)">
+  <h2 class="section-header">Le tue stazioni preferite</h2>
+  <ion-list>
+    <ion-item button *ngFor="let radio of favourites; let index" lines="none" (click)="toRadio(radio._id)">
         <ion-icon  size = "large" slot= "start" name="disc" color="primary"></ion-icon>
         <ion-label>
           <h3>{{ radio.name }}</h3>
           <p>{{ radio.city }}</p>
         </ion-label>
     </ion-item>
-  </ion-list> -->
+  </ion-list> 
 </ion-content>

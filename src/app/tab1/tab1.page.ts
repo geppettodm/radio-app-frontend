@@ -16,7 +16,7 @@ import { StorageService } from '../services/storage.service';
 export class Tab1Page {
   constructor(private router: Router, private dataService: DataServiceService, 
     private storage: StorageService, private auth:AuthService, private platform: Platform) {
-      this.platform.backButton.subscribeWithPriority(9999, () => {});
+      this.platform.backButton.subscribeWithPriority(1, () => {this.router.navigate(["/tabs/tab1"])});
   }
 
   caricamento = {
@@ -72,19 +72,19 @@ export class Tab1Page {
 
   async chargeStoredRadios(data) {
     let storageRadios = data
-  
+    let recentRadios= [];
+
     if (storageRadios != null) {   
-      storageRadios = storageRadios.reverse(); 
-      for (let i=0; i < storageRadios.length; i++) {
-        storageRadios[i] = await this.dataService.getRadio(storageRadios[i]);
+      for (let radio of storageRadios) {
+        recentRadios.push(await this.dataService.getRadio(radio));
         }
       
-      if (storageRadios.length < 4) {
-        for (let i = storageRadios.length - 1; i < 3; i++) {
-          storageRadios.push(this.nothing)
+      if (recentRadios.length < 4) {
+        for (let i = recentRadios.length - 1; i < 3; i++) {
+          recentRadios.push(this.nothing)
         }
       }
-      this.data[0].radios = storageRadios;
+      this.data[0].radios = recentRadios.reverse();
     }
   }
 

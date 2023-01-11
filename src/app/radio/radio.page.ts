@@ -13,26 +13,43 @@ import { TabsPage } from '../tabs/tabs.page';
 export class RadioPage {
   radio = null;
   area = [];
-  showplay = true;
+  showPlay = true;
+  showFav = false;
 
 
 
   constructor(private activatedRoute: ActivatedRoute, private dataService: DataServiceService, private router: Router) {
+    this.setShowFav();
   }
 
   ngOnInit() {
     this.activatedRoute.params.subscribe(params => { this.dataService.setNowRadio(params['radio']) })
-    this.dataService.nowRadio.subscribe(data => { this.radio = data; this.setShowplay() })
+    this.dataService.nowRadio.subscribe(data => { this.radio = data; this.setShowplay(); this.setShowFav(); })
     this.dataService.areaRadios.subscribe(data => this.area = data)
-
   }
 
-  setShowplay() {
-
+  setShowplay() {   
       if (this.radio?._id === this.dataService.playingRadio.value._id) {
-        this.showplay = false;
-      } else this.showplay = true;
-  
+        this.showPlay = false;
+      } else this.showPlay = true;
+  }
+
+  setShowFav() {   
+    if(this.dataService.favourites.find(item => item._id === this.radio?._id)){
+      this.showFav = true;
+    }
+  }
+
+  setFav(){
+    console.log(this.radio);
+    
+    if(this.showFav){
+      this.dataService.removeFavourite(this.radio._id)
+      this.showFav = false;
+    } else {
+      this.dataService.addFavourite(this.radio._id)
+      this.showFav = true;
+    }
   }
 
   redirect(_id) {

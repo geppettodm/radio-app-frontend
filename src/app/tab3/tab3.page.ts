@@ -10,9 +10,15 @@ import { DataServiceService } from '../services/data-service.service';
   styleUrls: ['tab3.page.scss']
 })
 export class Tab3Page {
+  favourites = [];
 
-  constructor(private router: Router, private auth:AuthService) {}
+  constructor(private router: Router, private auth:AuthService, private dataService: DataServiceService) {
+    this.favourites = this.dataService.favourites;
+  }
 
+  toRadio(id){
+    this.router.navigate(['/radio', id]);
+  }
 
   logout(){
     this.auth.logout();

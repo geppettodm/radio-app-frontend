@@ -44,7 +44,7 @@ export class TabsPage {
   }
 
   pauseRadio() {
-    this.audio.pause();
+    this.audio.pause();  
     this.playing = false;
   }
 

@@ -58,6 +58,7 @@ export class DataServiceService {
 
   redirectViolation(error:HttpErrorResponse){
     if(error.status==401){
+      this.auth.logout();      
       this.router.navigate(["/login"])
     } else (console.error(error))
   }
@@ -134,7 +135,7 @@ export class DataServiceService {
     }
   }
 
-  async getRadio(id: string) {
+  async getRadio(id: string):Promise<any> {
     return this.http.get(this.conn + 'db/radio?id=' + id, { headers: this.auth.header.value,observe: 'body', responseType: 'json' }).toPromise().catch((error)=>{this.redirectViolation(error); return})
   }
 
@@ -144,8 +145,12 @@ export class DataServiceService {
 
   async addFavourite(id: string) {
     this.favourites.push(await this.getRadio(id))
-    return this.http.post(this.conn + 'db/favourite', {id:id}, { headers: this.auth.header.value,observe: 'body', responseType: 'json' }).toPromise().catch((error)=>{this.redirectViolation(error)})
+    return this.http.post(this.conn + 'db/add-favourite', {id:id}, { headers: this.auth.header.value,observe: 'body', responseType: 'json' }).toPromise().catch((error)=>{this.redirectViolation(error)})
   }
 
+  async removeFavourite(id: string) {
+    this.favourites = this.favourites.filter((radio)=>radio._id!=id)
+    return this.http.post(this.conn + 'db/remove-favourite', {id:id}, { headers: this.auth.header.value,observe: 'body', responseType: 'json' }).toPromise().catch((error)=>{this.redirectViolation(error)})
+  }
 
 }
