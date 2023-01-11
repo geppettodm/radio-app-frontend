@@ -78,13 +78,13 @@ export class Tab1Page {
       for (let radio of storageRadios) {
         recentRadios.push(await this.dataService.getRadio(radio));
         }
-      
+      recentRadios = recentRadios.reverse()
       if (recentRadios.length < 4) {
         for (let i = recentRadios.length - 1; i < 3; i++) {
           recentRadios.push(this.nothing)
         }
       }
-      this.data[0].radios = recentRadios.reverse();
+      this.data[0].radios = recentRadios;
     }
   }
 
