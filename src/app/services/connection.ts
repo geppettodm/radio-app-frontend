@@ -4,5 +4,5 @@ import { Injectable } from "@angular/core";
     providedIn: 'root'
   })
   export class Connection {
-    conn: string = "http://192.168.137.174:3000/";
+    conn: string = "http://127.0.0.1:3000/";
   }

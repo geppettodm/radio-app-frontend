@@ -29,26 +29,31 @@ export class DataServiceService {
   areaRadios = new BehaviorSubject(null);
   nowRadio = new BehaviorSubject(null);
   playingRadio = new BehaviorSubject({ name: "", city: "", conn: null, _id: null });
-  recentRadios = new BehaviorSubject(null)
+  recentRadios = new BehaviorSubject(null);
+  favourites = [];
 
 
 
   constructor(private http: HttpClient, private storage: StorageService, private router:Router, private auth:AuthService, private connection:Connection) {
-    this.auth.header.subscribe((header)=>this.init())
+    this.auth.header.subscribe((data)=>{
+      if(!data){
+        this.playingRadio.next({ name: "", city: "", conn: null, _id: null });
+        this.playingRadioStringConn = null;
+      }
+    })
   }
 
   async init() {
-    if(this.auth.header.value!=null){
     this.newRandomRadios(5)
-
+    await this.storage.init();
     this.recentRadios.next(await this.storage.get("recentRadios"))
 
     const coord = await Geolocation.getCurrentPosition();
     this.x = coord.coords.latitude
     this.y = coord.coords.longitude
     this.newNearRadios()
+    this.getFavourites()
     this.router.navigate(["/tabs/tab1"])
-    } else this.router.navigate(["/login"])
   }
 
   redirectViolation(error:HttpErrorResponse){
@@ -95,7 +100,7 @@ export class DataServiceService {
     (error)=>this.redirectViolation(error))
   }
 
-  async setPlayingRadio(radio) {
+  async setPlayingRadio(radio) {    
     if (radio.conn) {
       let url = await this.http.get(this.conn + 'db/url?string=' + "http://radio.garden/api/ara/content/listen/" + radio.conn + "/channel.mp3", { headers: this.auth.header.value, observe: 'body', responseType: 'json' }).toPromise().catch((error)=>{this.redirectViolation(error); return})
       
@@ -132,5 +137,15 @@ export class DataServiceService {
   async getRadio(id: string) {
     return this.http.get(this.conn + 'db/radio?id=' + id, { headers: this.auth.header.value,observe: 'body', responseType: 'json' }).toPromise().catch((error)=>{this.redirectViolation(error); return})
   }
+
+  async getFavourites(){
+    this.http.get(this.conn + 'db/favourites', { headers: this.auth.header.value,observe: 'body', responseType: 'json' }).subscribe((data:[])=>{this.favourites=data}, (error)=>{this.redirectViolation(error)})
+  }
+
+  async addFavourite(id: string) {
+    this.favourites.push(await this.getRadio(id))
+    return this.http.post(this.conn + 'db/favourite', {id:id}, { headers: this.auth.header.value,observe: 'body', responseType: 'json' }).toPromise().catch((error)=>{this.redirectViolation(error)})
+  }
+
 
 }

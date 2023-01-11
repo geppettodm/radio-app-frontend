@@ -14,28 +14,41 @@ export class TabsPage {
   public radio;
   audio: HTMLAudioElement;
 
-  constructor(private dataService: DataServiceService, private router: Router) {}
-  
+  constructor(private dataService: DataServiceService, private router: Router) { }
 
-  ngOnInit(){
-    this.dataService.playingRadio.subscribe((data) => {this.radio=data;this.playRadio()})
+
+  ngOnInit() {
+    this.dataService.playingRadio.subscribe((data) => {
+      if (data._id) {
+        this.radio = data;
+        this.playRadio()
+      } else {
+        if (this.audio) {
+          this.audio.pause();
+          this.audio = null
+        }
+      }
+    })
   }
 
-  playRadio(){
-    if(this.dataService.playingRadioStringConn!=null){
-    if(this.audio) {this.audio.pause(); this.audio = null}
-    this.audio = new Audio(this.dataService.playingRadioStringConn);
-    this.audio.play();
-    this.playing=true;
+  playRadio() {
+    if (this.dataService.playingRadioStringConn != null) {
+      if (this.audio) {
+        this.audio.pause();
+        this.audio = null
+      }
+      this.audio = new Audio(this.dataService.playingRadioStringConn);
+      this.audio.play();
+      this.playing = true;
     }
   }
 
-  pauseRadio(){
+  pauseRadio() {
     this.audio.pause();
-    this.playing=false;
+    this.playing = false;
   }
 
-  toRadio(_id){
+  toRadio(_id) {
     this.router.navigate(['/radio', _id]);
   }
 }

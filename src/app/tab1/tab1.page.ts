@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { Platform } from '@ionic/angular';
 import { AuthService } from '../services/auth.service';
 import { DataServiceService } from '../services/data-service.service';
 import { StorageService } from '../services/storage.service';
@@ -13,12 +14,14 @@ import { StorageService } from '../services/storage.service';
 })
 
 export class Tab1Page {
-  constructor(private router: Router, private dataService: DataServiceService, private storage: StorageService, private auth:AuthService) {
+  constructor(private router: Router, private dataService: DataServiceService, 
+    private storage: StorageService, private auth:AuthService, private platform: Platform) {
+      this.platform.backButton.subscribeWithPriority(9999, () => {});
   }
 
   caricamento = {
     name: "...in caricamento",
-    image: "",
+    image: "assets/icon/icon.gif",
     buffering: true
   }
 
@@ -55,6 +58,7 @@ export class Tab1Page {
   };
 
   async ngOnInit() {
+    this.dataService.init();
     this.data[0].radios = [this.nothing, this.nothing, this.nothing]
     this.data[1].radios = [this.caricamento, this.caricamento, this.caricamento]
     this.data[2].radios = [this.caricamento, this.caricamento, this.caricamento]
@@ -65,9 +69,10 @@ export class Tab1Page {
   }
 
 
+
   async chargeStoredRadios(data) {
     let storageRadios = data
-
+  
     if (storageRadios != null) {   
       storageRadios = storageRadios.reverse(); 
       for (let i=0; i < storageRadios.length; i++) {
@@ -121,4 +126,10 @@ export class Tab1Page {
     if (data.id === 2)
       this.dataService.newNearRadios();
   }
+
+  logout(){
+    this.auth.logout();
+    this.router.navigate(['/login']);
+  }
+
 }

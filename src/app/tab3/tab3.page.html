@@ -1,17 +1,18 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>
-      Tab 3
-    </ion-title>
+    <img slot="start" src="assets/icon/icon.png" style="height: 3vh; margin-left: 5px;">
+    <ion-icon slot="end" name="log-out" size="large" color="primary" style="width: 10vw;" (click)="logout()"></ion-icon>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 3</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
-
+  <!-- <ion-list>
+    <ion-item button *ngFor="let radio of results; let index" lines="none" (click)="toRadio(radio._id)">
+        <ion-icon  size = "large" slot= "start" name="disc" color="primary"></ion-icon>
+        <ion-label>
+          <h3>{{ radio.name }}</h3>
+          <p>{{ radio.city }}</p>
+        </ion-label>
+    </ion-item>
+  </ion-list> -->
 </ion-content>

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 import { DataServiceService } from '../services/data-service.service';
 
 @Component({
@@ -11,7 +12,7 @@ export class Tab2Page {
   results = [];
   
 
-  constructor(private dataService:DataServiceService, private router: Router) {}
+  constructor(private dataService:DataServiceService, private router: Router, private auth:AuthService) {}
 
 
   search(event?){
@@ -19,7 +20,6 @@ export class Tab2Page {
     const query = event.target.value.toLowerCase();
     this.dataService.searchRadios(query).then((data:[])=>{this.results = data;});
     } else {
-      console.log("no event");
       this.dataService.searchRadios().then((data:[])=>{this.results = this.results.concat(data)});
     }
   }
@@ -35,4 +35,8 @@ export class Tab2Page {
     this.router.navigate(['/radio', id]);
   }
 
+  logout(){
+    this.auth.logout();
+    this.router.navigate(['/login']);
+  }
 }

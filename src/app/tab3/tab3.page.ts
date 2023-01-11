@@ -1,4 +1,8 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+
+import { DataServiceService } from '../services/data-service.service';
 
 @Component({
   selector: 'app-tab3',
@@ -7,6 +11,12 @@ import { Component } from '@angular/core';
 })
 export class Tab3Page {
 
-  constructor() {}
+  constructor(private router: Router, private auth:AuthService) {}
+
+
+  logout(){
+    this.auth.logout();
+    this.router.navigate(['/login']);
+  }
 
 }

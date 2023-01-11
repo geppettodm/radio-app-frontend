@@ -1,14 +1,14 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <img src="assets/icon/favicon.png" style="height: 5vh;">
+    <img slot="start" src="assets/icon/icon.png" style="height: 3vh; margin-left: 5px;">
   </ion-toolbar>
 </ion-header>
 
 
 
 <ion-content *ngIf="radio" [style.--custombg]="radio.backgroundColor">
-  <div class="ion-text-center image-box" #cover>
-    <img [src]="radio.image" *ngIf="radio" onerror="this.error=null; this.src= 'assets/icon/favicon.png'">
+  <div class="ion-text-center image-box"  #cover>
+    <img [src]="radio.image" *ngIf="radio" onerror="this.error=null; this.src= 'assets/icon/icon.png'" style ="width: 100vw" >
   </div>
   
   <!-- Rest of the page content -->

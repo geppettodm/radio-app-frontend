@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { ToastController } from '@ionic/angular';
+import { ExploreContainerComponentModule } from '../explore-container/explore-container.module';
 import { AuthService } from '../services/auth.service';
 
 @Component({
@@ -9,32 +11,23 @@ import { AuthService } from '../services/auth.service';
 })
 export class LoginPage implements OnInit {
 
-  credentials = {username:'', password: ''}
+  credentials = { username: '', password: '' }
 
-  constructor(private auth: AuthService, private router:Router) { }
+  constructor(private auth: AuthService, private router: Router) { }
 
-  ngOnInit() {
+  async ngOnInit() {  
+    this.auth.init().then((data)=> {if(data) this.router.navigate(['/tabs/tab1']);})
   }
 
-  async login(){
-    try{
-    this.auth.login(this.credentials.username, this.credentials.password)
-    this.router.navigate(['/tabs/tab1'])
-    } catch(error){
-      console.log(error);
-    }
-    
-  }
 
-  async createAccount(){
-    try{
-      this.auth.createAccount(this.credentials.username, this.credentials.password)
+
+  async login() {
+    if (await this.auth.login(this.credentials.username, this.credentials.password))
       this.router.navigate(['/tabs/tab1'])
-      } catch(error){
-        console.log(error);
-      }
   }
 
-
-
+  async createAccount() {
+    if (await this.auth.createAccount(this.credentials.username, this.credentials.password))
+      this.router.navigate(['/tabs/tab1'])
+  }
 }
