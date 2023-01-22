@@ -40,9 +40,7 @@ export class RadioPage {
     }
   }
 
-  setFav(){
-    console.log(this.radio);
-    
+  setFav(){    
     if(this.showFav){
       this.dataService.removeFavourite(this.radio._id)
       this.showFav = false;
